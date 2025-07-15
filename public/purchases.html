@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="uk">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Історія покупок - BuildMaster</title>
+		<link rel="stylesheet" href="class.css" />
+	</head>
+	<body>
+		<header>
+			<h1>BuildMaster - Історія покупок</h1>
+			<a href="Index.html">
+				<img src="logo.png" width="80" height="80" class="logo" />
+			</a>
+			<ul class="nav">
+				<li><a href="Index.html">Головна</a></li>
+				<li><a href="customers.html">Історія покупців</a></li>
+				<li><a href="purchases.html">Історія покупок</a></li>
+				<li><a href="about.html">Про нас</a></li>
+			</ul>
+		</header>
+
+		<main>
+			<h2>Всі покупки</h2>
+			<div class="sort-container">
+				<div style="margin-bottom: 15px">
+					<label for="sortSelect">Сортувати за:</label>
+					<select id="sortSelect">
+						<option value="PurchaseDate">Дата покупки</option>
+						<option value="CustomerName">Ім’я клієнта</option>
+						<option value="Email">Email</option>
+						<option value="Phone">Телефон</option>
+						<option value="ProductName">Товар</option>
+						<option value="Quantity">Кількість</option>
+						<option value="Price">Ціна</option>
+					</select>
+
+					<select id="orderSelect">
+						<option value="desc">⬇️ Спадання</option>
+						<option value="asc">⬆️ Зростання</option>
+					</select>
+				</div>
+			</div>
+			<table border="1" cellpadding="5" cellspacing="0" id="purchases-table">
+				<thead>
+					<tr>
+						<th>ІД покупки</th>
+						<th>Клієнт</th>
+						<th>Email</th>
+						<th>Телефон</th>
+						<th>Товар</th>
+						<th>Дата покупки</th>
+						<th>Кількість</th>
+						<th>Ціна за одиницю</th>
+						<th>Сума</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</main>
+
+		<script>
+			function loadPurchases() {
+				const sortBy = document.getElementById('sortSelect').value
+				const order = document.getElementById('orderSelect').value
+
+				fetch(`/api/purchases?sortBy=${sortBy}&order=${order}`)
+					.then(res => res.json())
+					.then(purchases => {
+						const tbody = document.querySelector('#purchases-table tbody')
+						tbody.innerHTML = ''
+						purchases.forEach(p => {
+							const total = (p.Price * p.Quantity).toFixed(2)
+							tbody.innerHTML += `
+              <tr>
+                <td>${p.PurchaseID}</td>
+                <td>${p.CustomerName}</td>
+                <td>${p.Email}</td>
+                <td>${p.Phone}</td>
+                <td>${p.ProductName}</td>
+                <td>${new Date(p.PurchaseDate).toLocaleString('uk-UA')}</td>
+                <td>${p.Quantity}</td>
+                <td>${p.Price} грн</td>
+                <td>${total} грн</td>
+              </tr>
+            `
+						})
+					})
+					.catch(err => console.error('Помилка завантаження покупок:', err))
+			}
+
+			document
+				.getElementById('sortSelect')
+				.addEventListener('change', loadPurchases)
+			document
+				.getElementById('orderSelect')
+				.addEventListener('change', loadPurchases)
+
+			// завантажити на старті
+			loadPurchases()
+		</script>
+	</body>
+</html>

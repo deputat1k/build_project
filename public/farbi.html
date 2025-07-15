@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="uk">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Фарби</title>
+		<link rel="stylesheet" href="class.css" />
+	</head>
+	<body>
+		<header>
+			<h1>BuildMaster — Фарби</h1>
+			<a href="index.html">
+				<img src="logo.png" width="80" height="80" class="logo" />
+			</a>
+			<ul class="nav">
+				<li><a href="index.html">Головна</a></li>
+				<li><a href="about.html">Про нас</a></li>
+			</ul>
+		</header>
+
+		<h2 style="text-align: center">Асортимент фарб</h2>
+		<div class="container-squares" id="farbi-container"></div>
+
+		<script>
+			fetch('/api/farbi')
+				.then(res => res.json())
+				.then(data => {
+					const container = document.getElementById('farbi-container')
+					container.innerHTML = ''
+
+					data.forEach(item => {
+						const imageTag = item.Image
+							? `<img src="images/${item.Image}" alt="${item.Name}" class="product-img" />`
+							: '<div class="no-image">Без зображення</div>'
+						const block = `
+            <a href="product.html?id=${item.ProductID}" class="product-link">
+              <div class="kvadrat">
+								 ${imageTag}
+                <h3>${item.Name}</h3>
+                <p>Колір: ${item.Color}</p>
+                <p>Обсяг: ${item.Volume} л</p>
+                <p>Тип: ${item.Type}</p>
+                <p>Вага: ${item.Weight} кг</p>
+                <h2 class="price">${item.Price} грн</h2>
+              </div>
+            </a>
+          `
+						container.innerHTML += block
+					})
+				})
+				.catch(err => {
+					console.error('Помилка при завантаженні:', err)
+					document.getElementById('farbi-container').innerHTML =
+						'<p>Не вдалося завантажити фарби.</p>'
+				})
+		</script>
+
+		<footer>
+			<div id="footer">
+				2025 BuildMaster — Всі права захищені<br />
+				Ви можете знайти нас на:
+				<p>
+					<a href="https://www.facebook.com" target="_blank">Facebook</a> |
+					<a href="https://www.twitter.com" target="_blank">Twitter</a> |
+					<a href="https://www.instagram.com" target="_blank">Instagram</a>
+				</p>
+				<p><a href="about.html">Про нас</a></p>
+			</div>
+		</footer>
+	</body>
+</html>

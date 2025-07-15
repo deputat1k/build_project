@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="uk">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Історія клієнтів - BuildMaster</title>
+		<link rel="stylesheet" href="class.css" />
+	</head>
+	<body>
+		<header>
+			<h1>BuildMaster - Клієнти</h1>
+			<a href="Index.html"
+				><img src="logo.png" width="80" height="80" class="logo"
+			/></a>
+			<ul class="nav">
+				<li><a href="Index.html">Головна</a></li>
+				<li><a href="customers.html">Історія покупців</a></li>
+				<li><a href="purchases.html">Історія покупок</a></li>
+				<li><a href="about.html">Про нас</a></li>
+			</ul>
+		</header>
+
+		<main>
+			<h2>Список клієнтів</h2>
+			<div class="sort-container">
+				<label for="sort-select">Сортувати за:</label>
+				<select id="sort-select">
+					<option value="name-asc">Ім’я (А-Я)</option>
+					<option value="name-desc">Ім’я (Я-А)</option>
+					<option value="email-asc">Email (А-Я)</option>
+					<option value="email-desc">Email (Я-А)</option>
+					<option value="id-asc">ID (за зростанням)</option>
+					<option value="id-desc">ID (за спаданням)</option>
+				</select>
+			</div>
+			<table border="1" cellpadding="5" cellspacing="0" id="customers-table">
+				<thead>
+					<tr>
+						<th>ІД</th>
+						<th>Ім'я</th>
+						<th>Email</th>
+						<th>Телефон</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</main>
+
+		<script>
+			const sortSelect = document.getElementById('sort-select')
+			let currentSort = 'Name'
+			let currentOrder = 'asc'
+
+			function fetchCustomers() {
+				fetch(`/api/customers?sortBy=${currentSort}&order=${currentOrder}`)
+					.then(res => res.json())
+					.then(customers => {
+						const tbody = document.querySelector('#customers-table tbody')
+						tbody.innerHTML = ''
+						customers.forEach(c => {
+							tbody.innerHTML += `
+              <tr>
+                <td>${c.CustomerID}</td>
+                <td>${c.Name}</td>
+                <td>${c.Email}</td>
+                <td>${c.Phone}</td>
+              </tr>
+            `
+						})
+					})
+					.catch(err => {
+						console.error('Помилка завантаження клієнтів:', err)
+						document.querySelector('main').innerHTML +=
+							'<p>Не вдалося завантажити клієнтів</p>'
+					})
+			}
+
+			sortSelect.addEventListener('change', () => {
+				const [sort, order] = sortSelect.value.split('-')
+				currentSort =
+					sort === 'id'
+						? 'CustomerID'
+						: sort.charAt(0).toUpperCase() + sort.slice(1)
+				currentOrder = order
+				fetchCustomers()
+			})
+
+			fetchCustomers()
+		</script>
+	</body>
+</html>

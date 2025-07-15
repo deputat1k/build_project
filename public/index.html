@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="uk">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>BuildMaster</title>
+		<link rel="stylesheet" href="class.css" />
+	</head>
+
+	<body>
+		<header>
+			<h1>BuildMaster</h1>
+			<a href="Index.html"
+				><img src="logo.png" width="80" height="80" class="logo"
+			/></a>
+			<ul class="nav">
+				<li><a href="Index.html">Головна</a></li>
+				<li><a href="customers.html">Історія покупців</a></li>
+				<li><a href="purchases.html">Історія покупок</a></li>
+				<li><a href="about.html">Про нас</a></li>
+			</ul>
+		</header>
+
+		<main>
+			<button id="toggle-menu">Категорії</button>
+			<div id="category-menu" class="hidden"></div>
+
+			<h2>Наші товари</h2>
+			<div class="container-squares" id="product-container"></div>
+		</main>
+
+		<footer>
+			<div id="footer">
+				2025 BuildMaster Всі права захищені
+				<p>Ви можете знайти нас на:</p>
+				<p>
+					<a href="https://www.facebook.com" target="_blank">Facebook</a> |
+					<a href="https://www.twitter.com" target="_blank">Twitter</a> |
+					<a href="https://www.instagram.com" target="_blank">Instagram</a>
+				</p>
+				<p><a href="about.html">Про нас</a></p>
+			</div>
+		</footer>
+
+		<script>
+			fetch('/api/products')
+				.then(response => response.json())
+				.then(products => {
+					const container = document.getElementById('product-container')
+					container.innerHTML = ''
+
+					products.forEach(product => {
+						const imageTag = product.Image
+							? `<img src="images/${product.Image}" alt="${product.Name}" class="product-img" />`
+							: '<div class="no-image">Без зображення</div>'
+
+						const block = `
+							<a href="product.html?id=${product.ProductID}" class="product-link">
+								<div class="kvadrat">
+									${imageTag}
+									<h3>${product.Name}</h3>
+									<p><strong>Короткий опис:</strong></p>
+									<p><strong>Виробник:</strong> ${product.Manufacturer || '—'}</p>
+									<p><strong>Вага:</strong> ${product.Weight ? product.Weight + ' кг' : '—'}</p>
+									<h2 class="price">${product.Price} грн</h2>
+								</div>
+							</a>
+						`
+						container.innerHTML += block
+					})
+				})
+				.catch(error => console.error('Помилка завантаження продуктів:', error))
+
+			// Меню категорій
+			const toggleBtn = document.getElementById('toggle-menu')
+			const menu = document.getElementById('category-menu')
+
+			toggleBtn.addEventListener('click', () => {
+				menu.classList.toggle('hidden')
+			})
+
+			// Завантажити категорії
+			fetch('/api/categories')
+				.then(res => res.json())
+				.then(categories => {
+					menu.innerHTML = ''
+
+					categories.forEach(cat => {
+						const item = document.createElement('div')
+						item.className = 'category-item'
+						item.textContent = cat.Name
+
+						item.addEventListener('click', () => {
+							if (cat.Name === 'Деревина') {
+								window.location.href = '/derevyna'
+							} else if (cat.Name === 'Будівельні суміші') {
+								window.location.href = '/sumishi'
+							} else if (cat.Name === 'Фарби') {
+								window.location.href = '/farbi'
+							} else if (cat.Name === 'Гвинти') {
+								window.location.href = '/screws'
+							}
+						})
+
+						menu.appendChild(item)
+					})
+				})
+				.catch(err => {
+					console.error('Помилка при завантаженні категорій:', err)
+					menu.innerHTML = '<p>Не вдалося завантажити категорії</p>'
+				})
+		</script>
+	</body>
+</html>

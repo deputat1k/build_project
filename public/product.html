@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="uk">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Товар</title>
+		<link rel="stylesheet" href="class.css" />
+	</head>
+	<body>
+		<header>
+			<h1>BuildMaster - Товар</h1>
+			<a href="Index.html"
+				><img src="logo.png" width="80" height="80" class="logo"
+			/></a>
+			<ul class="nav">
+				<li><a href="Index.html">Головна</a></li>
+				<li><a href="customers.html">Історія покупців</a></li>
+				<li><a href="purchases.html">Історія покупок</a></li>
+				<li><a href="about.html">Про нас</a></li>
+			</ul>
+		</header>
+		<main>
+			<div id="product-details" class="product-box"></div>
+
+			<div id="purchase-form" class="purchase-form" style="display: none">
+				<h2>Оформлення покупки</h2>
+				<input type="text" id="name" placeholder="Ім'я" /><br />
+				<input type="email" id="email" placeholder="Email" /><br />
+				<input type="tel" id="phone" placeholder="Телефон" /><br />
+				<input
+					type="number"
+					id="quantity"
+					placeholder="Кількість"
+					value="1"
+					min="1"
+				/><br />
+				<button id="submit-purchase">Підтвердити покупку</button>
+			</div>
+		</main>
+
+		<script>
+			const params = new URLSearchParams(window.location.search)
+			const productId = params.get('id')
+
+			if (!productId) {
+				document.body.innerHTML = '<p>Товар не знайдено</p>'
+			} else {
+				fetch('/api/products')
+					.then(res => res.json())
+					.then(products => {
+						const product = products.find(p => p.ProductID == productId)
+						if (!product)
+							return (document.body.innerHTML = '<p>Товар не знайдено</p>')
+
+						const div = document.getElementById('product-details')
+
+						const imageTag = product.Image
+							? `<img src="images/${product.Image}" alt="${product.Name}" class="product-img" />`
+							: '<div class="no-image">Без зображення</div>'
+						div.innerHTML = `
+	${imageTag}
+	<h2>${product.Name}</h2>
+	<p><strong>Опис:</strong> ${product.FullDescription || '—'}</p>
+	<p><strong>Виробник:</strong> ${product.Manufacturer || '—'}</p>
+	<p><strong>Вага:</strong> ${product.Weight || '—'} кг</p>
+	<p><strong>Ціна:</strong> <span class="price">${product.Price} грн</span></p>
+	<button onclick="document.getElementById('purchase-form').style.display = 'block'">Купити</button>
+`
+					})
+					.catch(() => {
+						document.body.innerHTML = '<p>Помилка завантаження товару</p>'
+					})
+			}
+
+			// Обробка покупки
+			document
+				.getElementById('submit-purchase')
+				.addEventListener('click', () => {
+					const name = document.getElementById('name').value
+					const email = document.getElementById('email').value
+					const phone = document.getElementById('phone').value
+					const quantity = parseInt(document.getElementById('quantity').value)
+
+					if (!name || !email || !phone || !quantity) {
+						alert('Заповніть всі поля!')
+						return
+					}
+
+					fetch('/api/purchase', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ name, email, phone, productId, quantity }),
+					})
+						.then(res => res.json())
+						.then(data => {
+							alert(data.message || 'Покупку оформлено!')
+							window.location.href = '/purchases'
+						})
+						.catch(err => {
+							alert('Помилка оформлення покупки')
+							console.error(err)
+						})
+				})
+		</script>
+	</body>
+</html>
